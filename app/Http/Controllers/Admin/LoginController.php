@@ -109,4 +109,12 @@ class LoginController extends Controller
     {
         return view('admin.welcome');
     }
+    //后台退出登录
+    public function logout()
+    {
+        //清空session中的用户信息
+        session()->flush();
+        //跳转到登录页面
+        return redirect('admin/login');
+    }
 }
