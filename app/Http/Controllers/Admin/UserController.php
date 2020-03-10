@@ -15,9 +15,26 @@ class UserController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        return view('admin.user.list');
+        //1.获取提交的请求参数
+//        $input=$request->all();
+//        dd($input);
+
+        $user=User::orderBy('user_id','asc')
+            ->where(function ($query) use ($request){
+                $username=$request->input('username');
+                $email=$request->input('email');
+                if(!empty($username)){
+                    $query->where('user_name','like','%'.$username.'%');
+                }
+                if(!empty($email)){
+                    $query->where('user_name','like','%'.$email.'%');
+                }
+            })
+            ->paginate($request->input('num')?$request->input('num'):3);
+//        $user=User::paginate(1);
+        return view('admin.user.list',compact('user','request'));
     }
 
     /**
