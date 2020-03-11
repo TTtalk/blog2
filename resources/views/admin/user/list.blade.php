@@ -3,7 +3,7 @@
   
   <head>
     <meta charset="UTF-8">
-    <title>欢迎页面-X-admin2.0</title>
+    <title>用户列表页</title>
     <meta name="renderer" content="webkit">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <meta name="viewport" content="width=device-width,user-scalable=yes, minimum-scale=0.4, initial-scale=0.8,target-densitydpi=low-dpi" />
@@ -30,7 +30,7 @@
     </div>
     <div class="x-body">
       <div class="layui-row">
-        <form class="layui-form layui-col-md12 x-so" method="get" action="{{'user'}}">
+        <form class="layui-form layui-col-md12 x-so" method="get" action="{{'/admin/user'}}">
           <div class="layui-input-inline">
             <select name="num" lay-filter="aihao">
               {{--<option value=""></option>--}}
@@ -65,9 +65,9 @@
         <tbody>
         @foreach($user as $v)
           <tr>
-            {{--<td>--}}
-              {{--<div class="layui-unselect layui-form-checkbox" lay-skin="primary" data-id='2'><i class="layui-icon">&#xe605;</i></div>--}}
-            {{--</td>--}}
+            <td>
+              <div class="layui-unselect layui-form-checkbox" lay-skin="primary" data-id='{{ $v->user_id }}'><i class="layui-icon">&#xe605;</i></div>
+            </td>
             <td>{{$v->user_id}}</td>
             <td>{{$v->user_name}}</td>
             <td>{{$v->email}}</td>
@@ -83,7 +83,7 @@
               {{--<a onclick="x_admin_show('修改密码','member-password.html',600,400)" title="修改密码" href="javascript:;">--}}
                 {{--<i class="layui-icon">&#xe631;</i>--}}
               {{--</a>--}}
-              <a title="删除" onclick="member_del(this,'要删除的id')" href="javascript:;">
+              <a title="删除" onclick="member_del(this,{{$v->user_id}})" href="javascript:;">
                 <i class="layui-icon">&#xe640;</i>
               </a>
             </td>
@@ -138,23 +138,53 @@
       /*用户-删除*/
       function member_del(obj,id){
           layer.confirm('确认要删除吗？',function(index){
+
+            $.post('/admin/user/'+id,{"_method":"delete","_token":"{{csrf_token()}}"},function(data){
+              // console.log(data);
+              if(data.status==0){
+                $(obj).parents("tr").remove();
+                layer.msg(data.message,{icon:6,time:1000},function () {
+                  location.reload(true);
+                });
+              }else {
+                layer.msg(data.message,{icon:5,time:1000},function () {
+                  location.reload(true);
+                })
+              }
+            })
+
+
               //发异步删除数据
-              $(obj).parents("tr").remove();
-              layer.msg('已删除!',{icon:1,time:1000});
+              // $(obj).parents("tr").remove();
+              // layer.msg('已删除!',{icon:1,time:1000});
           });
       }
 
 
 
       function delAll (argument) {
+          // 获取到要批量删除的用户的id
+          var ids = [];
 
-        var data = tableCheck.getData();
-  
-        layer.confirm('确认要删除吗？'+data,function(index){
-            //捉到所有被选中的，发异步进行删除
-            layer.msg('删除成功', {icon: 1});
-            $(".layui-form-checked").not('.header').parents('tr').remove();
-        });
+          $(".layui-form-checked").not('.header').each(function(i,v){
+              var u = $(v).attr('data-id');
+              ids.push(u);
+          })
+
+
+          layer.confirm('确认要删除吗？',function(index){
+
+              $.get('/admin/user/del',{'ids':ids},function(data){
+                  if(data.status == 0){
+                      $(".layui-form-checked").not('.header').parents('tr').remove();
+                      layer.msg(data.message,{icon:6,time:1000});
+                  }else{
+                      layer.msg(data.message,{icon:5,time:1000});
+                  }
+              });
+
+
+          });
       }
     </script>
     <script>var _hmt = _hmt || []; (function() {

@@ -32,6 +32,8 @@ Route::group(['prefix'=>'admin','namespace'=>'Admin','middleware'=>'isLogin'],fu
 
 
 
-    //后台用户模块相关路由
+    //后台用户模块相关路由   //删除所有选中用户路由
+    Route::get('user/del','UserController@delAll');
+
     Route::resource('user','UserController');
 });
